@@ -2,8 +2,6 @@ import numpy as np
 import cv2
 
 cap = cv2.VideoCapture(0)
-# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 160)
-# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 90)
 
 from src import filters as ft
 
@@ -12,7 +10,7 @@ while(True):
     ret, frame = cap.read()
 
     # Our operations on the frame come here
-    outputFrame = ft.edgesFilter(frame)
+    outputFrame = ft.asciiFilter(frame)
 
     # Display the resulting frame
     cv2.imshow('frame',outputFrame)

@@ -35,7 +35,10 @@ def asciiFilter(frame):
 
   _frame = grayFilter(frame)
   rows, cols = _frame.shape
-  output = np.zeros((rows*10, cols*10))
+  output = np.zeros((rows, cols))
+
+  resized_rows, resized_cols = rows//10, cols//10
+  _frame = cv2.resize(_frame, (resized_cols, resized_rows), interpolation = cv2.INTER_LINEAR)
 
   def round(pixel):
     new_pixel = np.floor(pixel / n)
@@ -43,11 +46,9 @@ def asciiFilter(frame):
 
   _frame = round(_frame)
   
-  for i in range(rows):
-    for j in range(cols):
-      org = (j*10, i*10)
-      letter = ascii_char[_frame[i, j]]
-      output = cv2.putText(output, letter, org, font, 1, color, thickness, cv2.LINE_AA)
+  for i in range(resized_rows):
+    for j in range(resized_cols):
+      output = cv2.putText(output, ascii_char[_frame[i, j]], (j*10, i*10), font, 1, color, thickness, cv2.LINE_AA)
 
   return output
 
