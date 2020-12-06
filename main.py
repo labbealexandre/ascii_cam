@@ -13,24 +13,27 @@ index = 0
 mask = mk.initMask(frame)
 resized_rows, resized_cols = mask.shape
 
-params = mk.initMatrixEffect(mask)
-isFinished = False
+params = mk.initStainEffect(mask)
+isStarted, isFinished = False, False
 
 while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
 
-    if not isFinished:
-        isFinished = mk.updateMatrixEffect(mask, index, params)
+    if not isFinished and isStarted:
+        isFinished = mk.updateStainEffect(mask, index, params)
         index +=1
 
     outputFrame = ft.asciiFilter(frame, mask=mask, q=1.6)
 
     # Display the resulting frame
     cv2.imshow('frame',outputFrame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    key_pressed = cv2.waitKey(1) & 0xFF
+    if key_pressed == ord('q'):
         break
+    if key_pressed == ord('m'):
+        isStarted = True
 
 # When everything done, release the capture
 cap.release()
