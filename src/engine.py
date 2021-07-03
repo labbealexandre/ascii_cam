@@ -1,10 +1,10 @@
 """Engine that will run filter on the input."""
 
 from typing import Any
-
 import cv2  # type: ignore
 
 from src import types
+from src import capture as cp
 
 
 def run(cap: Any,
@@ -30,3 +30,5 @@ def run(cap: Any,
         if key_pressed == ord('q'):
             raise RuntimeError(
                 'The execution of the stream has been stopped by the user.')
+        if key_pressed == ord('p'):
+            cp.save_picture(output_frame)

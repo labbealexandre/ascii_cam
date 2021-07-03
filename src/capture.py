@@ -1,9 +1,15 @@
 """OpenCV capture methods."""
 
+import os.path
+import os
+from datetime import datetime
+
 import screeninfo  #type: ignore
 import cv2  # type: ignore
 
 from src import types
+
+IMAGE_FOLDER = 'images'
 
 
 def _get_frame_dimension(frame: types.Frame) -> int:
@@ -36,3 +42,16 @@ def set_full_screen(frame_name: str) -> None:
     cv2.namedWindow(frame_name, cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN,
                           cv2.WINDOW_FULLSCREEN)
+
+
+def save_picture(frame: types.Frame) -> None:
+    """Save picture in the image folder."""
+
+    if not os.path.isdir(IMAGE_FOLDER):
+        os.mkdir(IMAGE_FOLDER)
+
+    now = datetime.now()
+    now_str = now.strftime('%Y%m%d-%H%M%S')
+    path_file = f'images/{now_str}.png'
+    print(f'Save picture at {path_file}')
+    cv2.imwrite(path_file, frame * 256)
