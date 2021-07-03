@@ -1,0 +1,42 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/myint/unify
+    rev: "v0.5"
+    hooks:
+      - id: unify
+        args: [-i]
+
+  - repo: https://github.com/myint/docformatter
+    rev: "v1.4"
+    hooks:
+      - id: docformatter
+        args: [--wrap-summaries=160, --wrap-descriptions=160, -i]
+
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: "v0.30.0"
+    hooks:
+      - id: yapf
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: [--load-plugins=pylint_quotes]
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        entry: bash -c 'exec mypy .'
+
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.6.1
+    hooks:
+      - id: mdformat

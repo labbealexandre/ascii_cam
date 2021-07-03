@@ -1,67 +1,82 @@
-import cv2
+"""Filter methods."""
+
+import cv2  # type: ignore
 import numpy as np
 
-def grayFilter(frame):
-  return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+from src import capture as cp
+from src import types
 
-def reductionFilter(frame):
+ASCII_CHARS = [' ', '.', ':', '-', '=', '+', '*', 'o', '%', '#']
+ASCII_COLOR = (1, 1, 1)
+ASCII_THICKNESS = 1
+ASCII_FONT = cv2.FONT_HERSHEY_PLAIN
 
-  def my_round(pixel):
-    new_pixel = np.round(pixel / 32) * 32
-    return new_pixel.astype(np.uint8)
 
-  output = grayFilter(frame)
-  rows, cols = output.shape
-  output = my_round(output)
+def grey_filter(frame: types.Frame) -> types.Frame:
+    """Return a gray scale frame."""
 
-  return output
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-def sandboxFilter(frame):
-  org = (50, 50)
-  color = (255, 255, 255)
-  thickness = 1
-  font = cv2.FONT_HERSHEY_PLAIN 
-  outputFrame = cv2.putText(frame, 'a', org, font, 1, color, thickness, cv2.LINE_AA)
-  size = cv2.getTextSize('a', font, 1, 1)
-  return outputFrame
 
-def asciiFilter(frame, isGrey=False, mask=None, q=1):
-  ascii_char = [' ','.',':','-','=','+','*','o','%','#']
-  n = 256 / len(ascii_char)
-  color = (1, 1, 1)
-  thickness = 1
-  font = cv2.FONT_HERSHEY_PLAIN
+def reduction_filter(frame: types.Frame) -> types.Frame:
+    """Return a reduced gray scale frame."""
+    def my_round(pixel):
+        new_pixel = np.round(pixel / 32) * 32
+        return new_pixel.astype(np.uint8)
 
-  if isGrey:
-    _frame = frame
-  else:
-    _frame = grayFilter(frame)
+    output = grey_filter(frame)
+    output = my_round(output)
 
-  rows, cols = _frame.shape
-  output = np.zeros((rows, cols, 3))
+    return output
 
-  resized_rows, resized_cols = rows//10, cols//10
-  _frame = cv2.resize(_frame, (resized_cols, resized_rows), interpolation = cv2.INTER_LINEAR)
 
-  def round(pixel):
-    new_pixel = np.floor((pixel / n) / q)
-    return new_pixel.astype(np.uint8)
+def ascii_filter(frame: types.Frame,
+                 output_size: types.FrameDimension = None,
+                 is_grey: bool = False,
+                 q: float = 1) -> types.Frame:
+    """Return a frame filled with ascii letters."""
 
-  _frame = round(_frame)
-  
-  for i in range(resized_rows):
-    for j in range(resized_cols):
-      if mask is not None and mask[i,j] == 1:
-        output = cv2.putText(output, ascii_char[_frame[i, j]], (j*10, i*10+9), font, 1, color, thickness, cv2.LINE_AA)
-      else:
-        output[i*10:(i+1)*10,j*10:(j+1)*10] = frame[i*10:(i+1)*10,j*10:(j+1)*10]/256.0
+    if output_size is None:
+        output_size = cp.get_screen_size()
 
-  return output
+    char_n = len(ASCII_CHARS)
 
-def edgesFilter(frame):
-  gray = grayFilter(frame)
-  gray_filtered = cv2.bilateralFilter(gray, 7, 50, 50)
-  # output = cv2.Canny(gray_filtered, 40, 80)
-  output = cv2.Canny(gray_filtered, 20, 30)
+    pixel_range = 256 / char_n
 
-  return output
+    # Initialize the output
+    output = np.zeros((output_size['height'], output_size['width'], 3))
+
+    # Convert the frame to gray scale
+    working_frame = frame if is_grey else grey_filter(frame)
+
+    # Resize the initial frame
+    resized_rows, resized_cols = output_size['height'] // char_n, output_size[
+        'width'] // char_n
+    working_frame = cv2.resize(working_frame, (resized_cols, resized_rows),
+                               interpolation=cv2.INTER_LINEAR)
+
+    # Reduce the range of possible values to char_n
+    def round_pixel(pixel):
+        new_pixel = np.floor((pixel / pixel_range) / q)
+        return new_pixel.astype(np.uint8)
+
+    working_frame = round_pixel(working_frame)
+
+    # Replace grey pixel to the corresponding letter
+    for i in range(resized_rows):
+        for j in range(resized_cols):
+            output = cv2.putText(output, ASCII_CHARS[working_frame[i, j]],
+                                 (j * char_n, (i + 1) * char_n - 1),
+                                 ASCII_FONT, 1, ASCII_COLOR, ASCII_THICKNESS,
+                                 cv2.LINE_AA)
+    return output
+
+
+def edges_filter(frame: types.Frame) -> types.Frame:
+    """Return a frame with the edges of the input."""
+
+    gray = grey_filter(frame)
+    gray_filtered = cv2.bilateralFilter(gray, 7, 50, 50)
+    output = cv2.Canny(gray_filtered, 20, 30)
+
+    return output
