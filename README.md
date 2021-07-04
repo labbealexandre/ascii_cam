@@ -2,6 +2,8 @@
 
 ASCII Cam is a python module for adding an ASCII filter to your camera.
 
+![20210704-170258](https://user-images.githubusercontent.com/47745899/124389968-d2f9a980-dce9-11eb-8fdb-829a0c683005.png)
+
 ## Installation
 
 Create a virtualenv with python 3.8 at least.
