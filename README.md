@@ -25,3 +25,12 @@ Run the main script
 ```bash
 python -m top_levels.ascii
 ```
+
+## Commands
+
+`q` - to stop the execution\
+`p` - to take a picture\
+`i` - to zoom in\
+`k` - to zoom out\
+`m` - to increase resolution\
+`j` - to decrease resolution
