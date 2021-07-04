@@ -30,8 +30,22 @@ def reduction_filter(frame: types.Frame) -> types.Frame:
     return output
 
 
+def zoom_filter(frame: types.Frame, zoom: float = 1) -> types.Frame:
+    """Return a zoomed frame."""
+
+    new_height, new_width = int(frame.shape[0] / zoom), int(frame.shape[1] /
+                                                            zoom)
+    top_offset, left_offset = (frame.shape[0] - new_height) // 2, (
+        frame.shape[1] - new_width) // 2
+
+    output = frame[top_offset:new_height + top_offset,
+                   left_offset:new_width + left_offset]
+    return output
+
+
 def ascii_filter(frame: types.Frame,
                  output_size: types.FrameDimension = None,
+                 zoom: float = 1,
                  is_grey: bool = False,
                  q: float = 1) -> types.Frame:
     """Return a frame filled with ascii letters."""
@@ -46,8 +60,11 @@ def ascii_filter(frame: types.Frame,
     # Initialize the output
     output = np.zeros((output_size['height'], output_size['width'], 3))
 
+    # Crop the frame to have a zoom effect
+    working_frame = zoom_filter(frame, zoom=zoom)
+
     # Convert the frame to gray scale
-    working_frame = frame if is_grey else grey_filter(frame)
+    working_frame = working_frame if is_grey else grey_filter(working_frame)
 
     # Resize the initial frame
     resized_rows, resized_cols = output_size['height'] // char_n, output_size[
@@ -78,5 +95,14 @@ def edges_filter(frame: types.Frame) -> types.Frame:
     gray = grey_filter(frame)
     gray_filtered = cv2.bilateralFilter(gray, 7, 50, 50)
     output = cv2.Canny(gray_filtered, 20, 30)
+
+    return output
+
+
+def ascii_edges_filter(frame: types.Frame) -> types.Frame:
+    """Return a frame with the ascii edges of the input."""
+
+    edges = edges_filter(frame)
+    output = ascii_filter(edges, is_grey=True)
 
     return output
